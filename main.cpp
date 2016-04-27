@@ -6,6 +6,18 @@
 //  Copyright © 2016 Ricardo Coronado. All rights reserved.
 //
 
+
+//                                  NEURONA[3,4,2] - DISTRIBUCION DEL ARRAY
+//                                  ---------------------------------------
+//  Segun la neurona de ejemplo necesitamos un array de 38 elementos distribuido de la siguiente manera
+//
+//          INPUT                                   PESOS
+//  [BIAS][inn1][inn2][inn3] | [WA1][WA2][WA3][WA4] [WB1][WB2][WB3][WB4] [WC1][WC2][WC3][WC4] [WD1][WD2][WD3][WD4]
+//  [BIAS][inn1][inn2][inn3][inn4]| [WA1][WA2][WA3][WA4][WA5] [WB1][WB2][WB3][WB4][WB5]
+//  [BIAS][inn1][inn2] | [VACIO]
+//
+
+
 #include <iostream>
 #include <time.h>
 #include <iostream>
@@ -155,7 +167,7 @@ int main(int argc, const char * argv[])
 //  MLP FORWARD Y BACKWARD PROPAGATION
 void mlp()
 {
-    total_epocas = 10000;
+    total_epocas = 5000;
     _datos *data;
     
     start = clock();
