@@ -41,7 +41,7 @@ void detalles_test(int contadorCasos, int contador);
 
 //  VARIABLES GLOBALES
 
-_datos *point_data_fit,*point_data_test;
+_datos *point_data;
 float *point_capa;
 float *capa;
 int *neurona;
@@ -51,6 +51,7 @@ int total_salidas;
 int *pos_ini;
 int total_array;
 float learn_rate;
+int total_epocas;
 float **sumatorias_error;
 float target[8][8] = {{0.99, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01},
                     {0.01, 0.99, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01},
@@ -143,8 +144,8 @@ int main(int argc, const char * argv[])
     
     
     liberar_memoria();
-    point_data_fit = NULL;
-    free(point_data_fit);
+    point_data = NULL;
+    free(point_data);
     point_capa = NULL;
     free(point_capa);
     return 0;
@@ -154,7 +155,7 @@ int main(int argc, const char * argv[])
 //  MLP FORWARD Y BACKWARD PROPAGATION
 void mlp()
 {
-    int total_epocas = 4000;
+    total_epocas = 10000;
     _datos *data;
     
     start = clock();
@@ -163,7 +164,7 @@ void mlp()
     for (int epoca = 0; epoca< total_epocas; epoca++)
     {
         //  Recorremos la data que esta almacenada en una lista enlazada
-        data = point_data_fit;
+        data = point_data;
         while (data != NULL)
         {
             //  Inicializamos el array con los datos de entrada del caso de entrenamiento
@@ -196,7 +197,7 @@ void mlp()
 //  MLP TEST FORWARD PROPAGATION
 void mlp_test()
 {
-    _datos *data = point_data_fit;
+    _datos *data = point_data;
     int res;
     int pos_resultado = pos_ini[total_capas - 1] + 1;
     string salida;
@@ -330,7 +331,7 @@ void obtener_data(string archivo,int total_input){
     
     nuevo = (struct _datos *) malloc (sizeof(struct _datos));
     puntero_aux = nuevo;
-    point_data_fit = nuevo;
+    point_data = nuevo;
     
     
     ifstream file(archivo);
@@ -378,6 +379,9 @@ void detalles_test(int contadorCasos, int contador)
 {
     int acurracy = contador * 100 / contadorCasos;
     cout<<endl<<endl<<"Tiempo de Entrenamiento: "<< duration <<endl;
+    cout<<"Epocas: "<<total_epocas<<endl;
+    cout<<"Learn Rate: "<<learn_rate<<endl;
+    cout<<"-------------------------------"<<endl;
     cout<<"Total de Casos: "<<contadorCasos<<endl;
     cout<<"Aciertos: "<<contador<<endl;
     cout<<"Desaciertos: "<<contadorCasos - contador<<endl;
@@ -389,8 +393,8 @@ void detalles_test(int contadorCasos, int contador)
 void liberar_memoria()
 {
     _datos *puntero_aux,*puntero_aux2;
-    puntero_aux = point_data_fit;
-    puntero_aux2 = point_data_fit;
+    puntero_aux = point_data;
+    puntero_aux2 = point_data;
     while (puntero_aux2 != NULL)
     {
         puntero_aux = puntero_aux2;
