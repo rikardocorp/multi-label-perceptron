@@ -37,6 +37,7 @@ float f_signoid(float numero);
 void multiplicacion_punto(int ,int ,int , int );
 void generar_deltas(int pos_target,int pos, int capaAux);
 void actualizar_pesos(int posInput, int posDelta, int cant_input, int cant_deltas, int numeroCapa);
+void detalles_test(int contadorCasos, int contador);
 
 //  VARIABLES GLOBALES
 
@@ -78,13 +79,14 @@ int main(int argc, const char * argv[])
     neurona = (int *)malloc(sizeof(int)*total_capas+1);
     
     //  Estructura de la neurona el indice del array neurona es el numero de capas y el valor es la cantidad de neuronas
-    neurona[0] = 58;
-    neurona[1] = 9;
-    neurona[2] = 8;
-    neurona[3] = 0;
+    neurona[0] = 58; // capa entrada
+    neurona[1] = 9;  // capa Intermedia
+    neurona[2] = 8;  // capa de salida
+    neurona[3] = 0;  // capa auxiliar [siempre cero]
+    
     total_input = neurona[0];
     total_salidas = neurona[total_capas-1];
-    learn_rate = 0.9;
+    learn_rate = 0.7;
     
     //  Array para almacenar posiciones de inicio de las capas
     pos_ini = (int *)malloc(sizeof(int)*total_capas);
@@ -132,7 +134,7 @@ int main(int argc, const char * argv[])
     
     //  Generamos la data en una estructura de listas enlazadas
     obtener_data("cara_test.csv",total_input);
-    //  Corremos el Forward Propagation
+    //  Corremos el Forward Propagation para el test
     mlp_test();
     
     
@@ -152,7 +154,7 @@ int main(int argc, const char * argv[])
 //  MLP FORWARD Y BACKWARD PROPAGATION
 void mlp()
 {
-    int total_epocas = 3000;
+    int total_epocas = 4000;
     _datos *data;
     
     start = clock();
@@ -202,7 +204,6 @@ void mlp_test()
     int contador = 0;
     int salidaFinal = 0;
     int contadorCasos = 0;
-    float acurracy = 0;
     
     while (data != NULL) {
         point_capa = capa;
@@ -216,9 +217,11 @@ void mlp_test()
         }
         
         contadorCasos++;
+        
+        //  Conteo de aciertos
         for (int i = 0; i < total_salidas; i++)
         {
-            
+            //  Redondeamos la salida a 0 o 1
             salidaFinal = (int)(point_capa[pos_resultado+i]+0.5);
             if(res-1 == i && salidaFinal == 1)
             {
@@ -231,13 +234,7 @@ void mlp_test()
         data = data->sig;
     }
     
-    acurracy = contador * 100 / contadorCasos;
-    cout<<endl<<endl<<"Tiempo de Entrenamiento: "<< duration <<endl;
-    cout<<"Total de Casos: "<<contadorCasos<<endl;
-    cout<<"Aciertos: "<<contador<<endl;
-    cout<<"Desaciertos: "<<contadorCasos - contador<<endl;
-    cout<<"Accuracy: "<<acurracy<<"%"<<endl;
-    
+    detalles_test(contadorCasos, contador);
 }
 
 
@@ -300,16 +297,16 @@ void actualizar_pesos(int posInput, int posDelta, int cant_input, int cant_delta
 //  SIMULACION DE MULTIPLICACION DE MATRICES
     //  pos_input -> manda la posicion inicial de las input para la capa
     //  pos_peso -> manda la posicion inicial de los pesos
-    //  capa_iniput -> cantidad de Inputs que alimentan a la capa actual = a la cantidad de neuronas de la capa anterior
-    //  capa_peso -> cantidad de pesos que recibe la neurona de la capa actual
-void multiplicacion_punto(int pos_input,int pos_peso,int capa_input, int capa_peso){
+    //  cant_input -> cantidad de Inputs que alimentan a la capa actual = cantidad de pesos que recibe la neurona de la capa actual
+    //  cant_neuronas -> cantidad de neuronas a procesar en la capa actual
+void multiplicacion_punto(int pos_input,int pos_peso,int cant_input, int cant_nueronas){
     float sumatoria;
-    int ini_matriz = capa_input + 1;
+    int ini_matriz = cant_input + 1;
     point_capa[pos_peso] = 1;
 
-    for (int i=1; i<capa_peso+1; i++){
+    for (int i=1; i< cant_nueronas +1; i++){
         sumatoria = 0;
-        for (int j=0; j<capa_input+1; j++){
+        for (int j=0; j<cant_input+1; j++){
             sumatoria = sumatoria + point_capa[pos_input+j]* point_capa[pos_input+ini_matriz*i+j];
         }
         point_capa[pos_peso+i] = f_signoid(sumatoria);
@@ -375,6 +372,20 @@ void obtener_data(string archivo,int total_input){
     free(puntero_aux);
 }
 
+
+//  RESULTADOS DEL TEST Y PRESICION
+void detalles_test(int contadorCasos, int contador)
+{
+    int acurracy = contador * 100 / contadorCasos;
+    cout<<endl<<endl<<"Tiempo de Entrenamiento: "<< duration <<endl;
+    cout<<"Total de Casos: "<<contadorCasos<<endl;
+    cout<<"Aciertos: "<<contador<<endl;
+    cout<<"Desaciertos: "<<contadorCasos - contador<<endl;
+    cout<<"Accuracy: "<<acurracy<<"%"<<endl;
+}
+
+
+// LIBERAR MEMORIA
 void liberar_memoria()
 {
     _datos *puntero_aux,*puntero_aux2;
