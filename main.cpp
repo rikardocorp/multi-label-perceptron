@@ -1,6 +1,6 @@
 //
 //  mlp.cpp
-//  mlp
+//  mlp soporta multiple capas intermedias
 //
 //  Created by Ricardo Coronado on 18/04/16.
 //  Copyright © 2016 Ricardo Coronado. All rights reserved.
@@ -32,7 +32,7 @@ using namespace std;
 
 struct _datos
 {
-    float * data = NULL;
+    double * data = NULL;
     int target;
     struct _datos *sig = NULL;
 };
@@ -45,7 +45,7 @@ void imprimir_array();
 void mlp();
 void mlp_test();
 void copiar_input(_datos *origen, int cantidad);
-float f_signoid(float numero);
+double f_signoid(double numero);
 void multiplicacion_punto(int ,int ,int , int );
 void generar_deltas(int pos_target,int pos, int capaAux);
 void actualizar_pesos(int posInput, int posDelta, int cant_input, int cant_deltas, int numeroCapa);
@@ -54,18 +54,18 @@ void detalles_test(int contadorCasos, int contador);
 //  VARIABLES GLOBALES
 
 _datos *point_data;
-float *point_capa;
-float *capa;
+double *point_capa;
+double *capa;
 int *neurona;
 int total_capas;
 int total_input;
 int total_salidas;
 int *pos_ini;
 int total_array;
-float learn_rate;
+double learn_rate;
 int total_epocas;
-float **sumatorias_error;
-float target[8][8] = {{0.99, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01},
+double **sumatorias_error;
+double target[8][8] = {{0.99, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01},
                     {0.01, 0.99, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01},
                     {0.01, 0.01, 0.99, 0.01, 0.01, 0.01, 0.01, 0.01},
                     {0.01, 0.01, 0.01, 0.99, 0.01, 0.01, 0.01, 0.01},
@@ -73,8 +73,8 @@ float target[8][8] = {{0.99, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01},
                     {0.01, 0.01, 0.01, 0.01, 0.01, 0.99, 0.01, 0.01},
                     {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.99, 0.01},
                     {0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.99}};
-//float target[2][2] ={{0.99,0.01},{0.01,0.99}};
-//float target[3][3] ={{0.99,0.01,0.01},{0.01,0.99,0.01},{0.01,0.01,0.99}};
+//double target[2][2] ={{0.99,0.01},{0.01,0.99}};
+//double target[3][3] ={{0.99,0.01,0.01},{0.01,0.99,0.01},{0.01,0.01,0.99}};
 
 
 //  VARIABLES PARA EL CLOCK
@@ -115,18 +115,19 @@ int main(int argc, const char * argv[])
     //  inicializamos el array principal de elementos con valores random
     total_array = total;
     srand(time(0));
-    capa = (float *)malloc(sizeof(float)*total_array);
+    capa = (double *)malloc(sizeof(double)*total_array);
     for (int i = 0; i< total; i++) {
         capa[i] = (double) rand()/RAND_MAX;
     }
     
     //  Reservamos espacio en memoria para una matriz que almacene el error acumulado de una neurona
-    sumatorias_error = (float **)malloc(sizeof(float)*(total_capas-1));
+    sumatorias_error = (double **)malloc(sizeof(double)*(total_capas-1));
     for (int i = 0; i< total_capas-1; i++) {
-        sumatorias_error[i] = (float *)malloc(sizeof(float)*(neurona[i]+1));
+        sumatorias_error[i] = (double *)malloc(sizeof(double)*(neurona[i]+1));
         for (int j=0; j < neurona[i]+1; j++) {
             sumatorias_error[i][j] = 0;
         }
+        cout<<endl;
     }
     
     //  Puntero al array principal
@@ -167,7 +168,7 @@ int main(int argc, const char * argv[])
 //  MLP FORWARD Y BACKWARD PROPAGATION
 void mlp()
 {
-    total_epocas = 5000;
+    total_epocas = 7000;
     _datos *data;
     
     start = clock();
@@ -177,8 +178,10 @@ void mlp()
     {
         //  Recorremos la data que esta almacenada en una lista enlazada
         data = point_data;
+        int cuenta = 0;
         while (data != NULL)
         {
+            cuenta++;
             //  Inicializamos el array con los datos de entrada del caso de entrenamiento
             copiar_input(data,total_input);
             
@@ -197,9 +200,9 @@ void mlp()
                 }
                 actualizar_pesos(pos_ini[c],pos_ini[c+1],neurona[c],neurona[c+1],c);
             }
-            
             data = data->sig;
         }
+        
     }
     
     duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
@@ -240,10 +243,10 @@ void mlp_test()
             {
                 contador++;
             }
-            cout<<salidaFinal<<" - ";
+//            cout<<salidaFinal<<" - ";
         }
         
-        cout<<"- "<<res<<endl;
+//        cout<<"- "<<res<<endl;
         data = data->sig;
     }
     
@@ -265,8 +268,8 @@ void copiar_input(_datos *origen, int cantidad)
 void generar_deltas(int pos_target,int pos, int capaAux)
 {
     for (int i = 1; i < capaAux+1; i++) {
-        float out = point_capa[pos+i];
-        float obj = target[pos_target][i-1];
+        double out = point_capa[pos+i];
+        double obj = target[pos_target][i-1];
         point_capa[pos+i] = ( out - obj) * out * (1 - out);
     }
 }
@@ -275,7 +278,7 @@ void generar_deltas(int pos_target,int pos, int capaAux)
 void actualizar_pesos(int posInput, int posDelta, int cant_input, int cant_deltas,int numeroCapa){
     // indicie para marcar el inicio de la seccion de pesos de la capa i
     int ini_matriz = posInput + cant_input + 1;
-    float derivada;
+    double derivada;
     
     //  Recorremos los deltas de la capa que hallamos anteriormente - hay un delta por neurona
     for (int i=1; i < cant_deltas+1; i++)
@@ -296,11 +299,13 @@ void actualizar_pesos(int posInput, int posDelta, int cant_input, int cant_delta
     }
     
     //  Por generalizacion acumulamos el error del bias que se almacena en la posicion 0, pero esto no es necesario ya que el bias es una neurona aislada, la primera posicion la inicializamos a 0 para las proximas iteraciones
+    double input_aux = 0;
     sumatorias_error[numeroCapa][0] = 0;
     for (int i=1; i < cant_input + 1; i++)
     {
         //  Almacenamos el delta para la iteracion de la siguiente capa, en nuestro array esto lo almacenamos en los input de salida de la proxima capa ya que estos no se volveran a utilizar, de esta manera reducimos el tamaño de nuestro array
-        point_capa[posInput + i] = sumatorias_error[numeroCapa][i] * (point_capa[posInput + i] * (1 - point_capa[posInput + i]));
+        input_aux = point_capa[posInput + i];
+        point_capa[posInput + i] = sumatorias_error[numeroCapa][i] * (input_aux * (1 - input_aux));
         //  Inicializamos el acumulador a 0 para proximas iteraciones
         sumatorias_error[numeroCapa][i] = 0;
     }
@@ -313,7 +318,7 @@ void actualizar_pesos(int posInput, int posDelta, int cant_input, int cant_delta
     //  cant_input -> cantidad de Inputs que alimentan a la capa actual = cantidad de pesos que recibe la neurona de la capa actual
     //  cant_neuronas -> cantidad de neuronas a procesar en la capa actual
 void multiplicacion_punto(int pos_input,int pos_peso,int cant_input, int cant_nueronas){
-    float sumatoria;
+    double sumatoria;
     int ini_matriz = cant_input + 1;
     point_capa[pos_peso] = 1;
 
@@ -328,7 +333,7 @@ void multiplicacion_punto(int pos_input,int pos_peso,int cant_input, int cant_nu
 
 
 //  FUNCION DE ACTIVACION
-float f_signoid(float numero)
+double f_signoid(double numero)
 {
     return 1 / (1 + pow(exp(1), -1 * numero));
 }
@@ -353,8 +358,8 @@ void obtener_data(string archivo,int total_input){
         getline ( file, value, '\n' );
         
         //  declaramos un array
-        float *d_array;
-        d_array = (float *)malloc(sizeof(float)*total_input);
+        double *d_array;
+        d_array = (double *)malloc(sizeof(double)*total_input);
         int c = 0;
         
         //  recorremos cada linea del file
